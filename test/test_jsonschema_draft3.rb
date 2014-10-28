@@ -1204,11 +1204,12 @@ class JSONSchemaDraft3Test < Test::Unit::TestCase
       }
     }
 
-    data = {"b" => 2}
+    data = {:b => 2}
     assert(JSON::Validator.validate(schema,data))
     assert_nil(data["a"])
     assert(JSON::Validator.validate(schema,data, :insert_defaults => true))
     assert_equal(42, data["a"])
+    assert_equal(2, data[:b])
 
     schema = {
       "$schema" => "http://json-schema.org/draft-03/schema#",
@@ -1219,21 +1220,12 @@ class JSONSchemaDraft3Test < Test::Unit::TestCase
       }
     }
 
-    data = {"b" => 2}
+    data = {:b => 2}
     assert(!JSON::Validator.validate(schema,data))
     assert_nil(data["a"])
     assert(JSON::Validator.validate(schema,data, :insert_defaults => true))
     assert_equal(42, data["a"])
-
-    schema = {
-      "$schema" => "http://json-schema.org/draft-03/schema#",
-      "type" => "object",
-      "properties" => {
-        "a" => {"type" => "integer", "default" => 42, "required" => true},
-        "b" => {"type" => "integer"}
-      }
-    }
-
+    assert_equal(2, data[:b])
 
     schema = {
       "$schema" => "http://json-schema.org/draft-03/schema#",
@@ -1244,11 +1236,12 @@ class JSONSchemaDraft3Test < Test::Unit::TestCase
       }
     }
 
-    data = {"b" => 2}
+    data = {:b => 2}
     assert(!JSON::Validator.validate(schema,data))
     assert_nil(data["a"])
     assert(!JSON::Validator.validate(schema,data, :insert_defaults => true))
     assert_nil(data["a"])
+    assert_equal(2, data[:b])
 
     schema = {
       "$schema" => "http://json-schema.org/draft-03/schema#",
@@ -1259,11 +1252,12 @@ class JSONSchemaDraft3Test < Test::Unit::TestCase
       }
     }
 
-    data = {"b" => 2}
+    data = {:b => 2}
     assert(JSON::Validator.validate(schema,data))
     assert_nil(data["a"])
     assert(!JSON::Validator.validate(schema,data, :insert_defaults => true))
     assert_equal("42",data["a"])
+    assert_equal(2, data[:b])
 
   end
 
