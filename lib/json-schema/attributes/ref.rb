@@ -30,28 +30,9 @@ module JSON
         ref_schema = JSON::Validator.schema_for_uri(schema_key)
 
         if ref_schema
-          # Perform fragment resolution to retrieve the appropriate level for the schema
-          target_schema = ref_schema.schema
-          fragments = JSON::Util::URI.parse(JSON::Util::URI.unescape_uri(temp_uri)).fragment.split("/")
-          fragment_path = ''
-          fragments.each do |fragment|
-            if fragment && fragment != ''
-              fragment = fragment.gsub('~0', '~').gsub('~1', '/')
-              if target_schema.is_a?(Array)
-                target_schema = target_schema[fragment.to_i]
-              else
-                target_schema = target_schema[fragment]
-              end
-              fragment_path = fragment_path + "/#{fragment}"
-              if target_schema.nil?
-                raise SchemaError.new("The fragment '#{fragment_path}' does not exist on schema #{ref_schema.uri.to_s}")
-              end
-            end
-          end
-
-          # We have the schema finally, build it and validate!
+          uri_fragment = JSON::Util::URI.parse(JSON::Util::URI.unescape_uri(temp_uri)).fragment
           uri = temp_uri
-          schema = JSON::Schema.new(target_schema,temp_uri,validator)
+          schema = JSON::Validator.get_referenced_schema(ref_schema, uri_fragment, validator)
         end
 
         [uri,schema]

@@ -67,11 +67,13 @@ module JSON
 
       # If the :fragment option is set, try and validate against the fragment
       if opts[:fragment]
-        @base_schema = schema_from_fragment(@base_schema, opts[:fragment])
+        @base_schema = self.class.schema_from_fragment(@base_schema, @options[:fragment], @options[:version])
+
+        @base_schema = @base_schema.to_array_schema if @options[:list]
       end
     end
 
-    def schema_from_fragment(base_schema, fragment)
+    def self.schema_from_fragment(base_schema, fragment, validator)
       schema_uri = base_schema.uri
       fragments = fragment.split("/")
 
@@ -90,22 +92,41 @@ module JSON
           if !base_schema.has_key?(f)
             raise JSON::Schema::SchemaError.new("Invalid fragment resolution for :fragment option")
           end
-          base_schema = JSON::Schema.new(base_schema[f],schema_uri,@options[:version])
+          base_schema = JSON::Schema.new(base_schema[f],schema_uri,validator)
         elsif base_schema.is_a?(Array)
           if base_schema[f.to_i].nil?
             raise JSON::Schema::SchemaError.new("Invalid fragment resolution for :fragment option")
           end
-          base_schema = JSON::Schema.new(base_schema[f.to_i],schema_uri,@options[:version])
+          base_schema = JSON::Schema.new(base_schema[f.to_i],schema_uri,validator)
         else
           raise JSON::Schema::SchemaError.new("Invalid schema encountered when resolving :fragment option")
         end
       end
 
-      if @options[:list]
-        base_schema.to_array_schema
-      else
-        base_schema
+      base_schema
+    end
+
+    def self.get_referenced_schema(base_schema, fragment, validator)
+      temp_uri = base_schema.uri.merge(:fragment => fragment)
+      target_schema = base_schema.schema
+      fragments = fragment.split("/")
+      fragment_path = ''
+      fragments.each do |f|
+        if f && f != ''
+          f = f.gsub('~0', '~').gsub('~1', '/')
+          if target_schema.is_a?(Array)
+            target_schema = target_schema[f.to_i]
+          else
+            target_schema = target_schema[f]
+          end
+          fragment_path = fragment_path + "/#{f}"
+          if target_schema.nil?
+            raise SchemaError.new("The fragment '#{fragment_path}' does not exist on schema #{base_schema.uri.to_s}")
+          end
+        end
       end
+
+      JSON::Schema.new(target_schema,temp_uri,validator)
     end
 
     # Run a simple true/false validation of data against a schema

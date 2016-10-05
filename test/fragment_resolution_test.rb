@@ -27,4 +27,56 @@ class FragmentResolutionTest < Minitest::Test
       JSON::Validator.validate!(schema,data,:fragment => "#/properties/b")
     end
   end
+
+  # def test_odd_level_fragment_resolution
+  #   schema = {
+  #     "foo" => {
+  #       "type" => "object",
+  #       "required" => ["a"],
+  #       "properties" => {
+  #         "a" => {"type" => "integer"}
+  #       }
+  #     }
+  #   }
+
+  #   assert_valid schema, {"a" => 1}, :fragment => "#/foo"
+  #   refute_valid schema, {}, :fragment => "#/foo"
+  # end
+
+  # def test_even_level_fragment_resolution
+  #   schema = {
+  #     "foo" => {
+  #       "bar" => {
+  #         "type" => "object",
+  #         "required" => ["a"],
+  #         "properties" => {
+  #           "a" => {"type" => "integer"}
+  #         }
+  #       }
+  #     }
+  #   }
+
+  #   assert_valid schema, {"a" => 1}, :fragment => "#/foo/bar"
+  #   refute_valid schema, {}, :fragment => "#/foo/bar"
+  # end
+
+  # def test_array_fragment_resolution
+  #   schema = {
+  #     "$schema" => "http://json-schema.org/draft-04/schema#",
+  #     "required" => ["a"],
+  #     "properties" => {
+  #       "a" => {
+  #         "anyOf" => [
+  #           {"type" => "integer"},
+  #           {"type" => "string"}
+  #         ]
+  #       }
+  #     }
+  #   }
+
+  #   data = "foo"
+  #   refute_valid schema, data
+  #   refute_valid schema, data, :fragment => "#/properties/a/anyOf/0"
+  #   assert_valid schema, data, :fragment => "#/properties/a/anyOf/1"
+  # end
 end
